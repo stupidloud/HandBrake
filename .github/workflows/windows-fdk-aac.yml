@@ -166,6 +166,7 @@ jobs:
         path: win/CS/HandBrakeWPF/bin/publish/HandBrake-Nightly-x86_64-Win_GUI.exe
         
   build_gui_arm:
+    if: false
     name: Windows UI ARM
     runs-on: windows-2022
     needs: [build_mingw_arm]
@@ -203,4 +204,3 @@ jobs:
       with:
         name: HandBrake-Win_GUI-ARM64
         path: win/CS/HandBrakeWPF/bin/publish/HandBrake-Nightly*.exe
-
