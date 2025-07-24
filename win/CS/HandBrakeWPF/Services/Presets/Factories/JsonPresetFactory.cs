@@ -307,6 +307,15 @@ namespace HandBrakeWPF.Services.Presets.Factories
             preset.Task.VideoPreset = new VideoPreset(importedPreset.VideoPreset, importedPreset.VideoPreset);
             preset.Task.VideoProfile = new VideoProfile(importedPreset.VideoProfile, importedPreset.VideoProfile);
 
+            if (!string.IsNullOrEmpty(importedPreset.VideoColorRange))
+            {
+                preset.Task.VideoColourRange = EnumHelper<VideoColourRange>.GetValue(importedPreset.VideoColorRange);
+            }
+            else
+            {
+                preset.Task.VideoColourRange = VideoColourRange.SameAsSource;
+            }
+
             if (!string.IsNullOrEmpty(importedPreset.VideoTune))
             {
                 string[] split = importedPreset.VideoTune.Split(',');
@@ -349,6 +358,9 @@ namespace HandBrakeWPF.Services.Presets.Factories
             preset.AudioTrackBehaviours.SelectedBehaviour = importedPreset.AudioTrackSelectionBehavior == "all"
                                                                      ? AudioBehaviourModes.AllMatching
                                                                      : AudioBehaviourModes.FirstMatch;
+
+            preset.AudioTrackBehaviours.AudioTrackNamePassthru = importedPreset.AudioTrackNamePassthru;
+            preset.AudioTrackBehaviours.AudioAutomaticNamingBehavior = EnumHelper<AudioTrackNamingBehaviour>.GetValue(importedPreset.AudioAutomaticNamingBehavior);
 
             preset.AudioTrackBehaviours.SelectedTrackDefaultBehaviour = importedPreset.AudioSecondaryEncoderMode ? AudioTrackDefaultsMode.FirstTrack : AudioTrackDefaultsMode.AllTracks;
 
@@ -417,6 +429,7 @@ namespace HandBrakeWPF.Services.Presets.Factories
             preset.SubtitleTrackBehaviours = new SubtitleBehaviours();
             preset.SubtitleTrackBehaviours.SelectedBehaviour = EnumHelper<SubtitleBehaviourModes>.GetValue(importedPreset.SubtitleTrackSelectionBehavior);
             preset.SubtitleTrackBehaviours.SelectedBurnInBehaviour = EnumHelper<SubtitleBurnInBehaviourModes>.GetValue(importedPreset.SubtitleBurnBehavior);
+            preset.SubtitleTrackBehaviours.SubtitleTrackNamePassthru = importedPreset.SubtitleTrackNamePassthru;
 
             preset.SubtitleTrackBehaviours.AddClosedCaptions = importedPreset.SubtitleAddCC;
             preset.SubtitleTrackBehaviours.AddForeignAudioScanTrack = importedPreset.SubtitleAddForeignAudioSearch;
@@ -543,6 +556,9 @@ namespace HandBrakeWPF.Services.Presets.Factories
                 preset.AudioList.Add(track);
             }
 
+            preset.AudioTrackNamePassthru = export.AudioTrackBehaviours.AudioTrackNamePassthru;
+            preset.AudioAutomaticNamingBehavior = EnumHelper<AudioTrackNamingBehaviour>.GetShortName(export.AudioTrackBehaviours.AudioAutomaticNamingBehavior);
+
             // Subtitles
             preset.SubtitleAddCC = export.SubtitleTrackBehaviours.AddClosedCaptions;
             preset.SubtitleAddForeignAudioSearch = export.SubtitleTrackBehaviours.AddForeignAudioScanTrack;
@@ -551,6 +567,7 @@ namespace HandBrakeWPF.Services.Presets.Factories
             preset.SubtitleBurnBehavior = EnumHelper<SubtitleBurnInBehaviourModes>.GetShortName(export.SubtitleTrackBehaviours.SelectedBurnInBehaviour);
             preset.SubtitleLanguageList = HandBrakeLanguagesHelper.GetLanguageCodes(export.SubtitleTrackBehaviours.SelectedLanguages);
             preset.SubtitleTrackSelectionBehavior = EnumHelper<SubtitleBehaviourModes>.GetShortName(export.SubtitleTrackBehaviours.SelectedBehaviour);
+            preset.SubtitleTrackNamePassthru = export.SubtitleTrackBehaviours.SubtitleTrackNamePassthru;
 
             // Chapters
             preset.ChapterMarkers = export.Task.IncludeChapterMarkers;
@@ -632,6 +649,7 @@ namespace HandBrakeWPF.Services.Presets.Factories
             preset.VideoEncoder = export.Task.VideoEncoder?.ShortName;
             preset.VideoFramerate = export.Task.Framerate.HasValue ? export.Task.Framerate.ToString() : null;
             preset.VideoFramerateMode = EnumHelper<FramerateMode>.GetShortName(export.Task.FramerateMode);
+            preset.VideoColorRange = EnumHelper<VideoColourRange>.GetShortName(export.Task.VideoColourRange);
             preset.VideoGrayScale = export.Task.Grayscale;
             preset.VideoLevel = export.Task.VideoLevel != null ? export.Task.VideoLevel.ShortName : null;
             preset.VideoOptionExtra = export.Task.ExtraAdvancedArguments;

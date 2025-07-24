@@ -564,6 +564,12 @@ int hb_str_ends_with(const char *base, const char *str)
 
 static void hb_common_global_hw_init()
 {
+#ifdef __APPLE__
+    hb_register_hwaccel(&hb_hwaccel_videotoolbox);
+#endif
+#if HB_PROJECT_FEATURE_NVDEC
+    hb_register_hwaccel(&hb_hwaccel_nvdec);
+#endif
 #if HB_PROJECT_FEATURE_NVENC
     hb_nvenc_h264_available();
 #endif
@@ -572,11 +578,16 @@ static void hb_common_global_hw_init()
 #endif
 #if HB_PROJECT_FEATURE_MF
     hb_directx_available();
+    hb_register_hwaccel(&hb_hwaccel_mf);
 #endif
-    // first initialization and QSV adapters list collection should happen after other hw vendors initializations to prevent device order issues
 #if HB_PROJECT_FEATURE_QSV
+    // First initialization and QSV adapters list collection should happen
+    // after other hw vendors initializations to prevent device order issues
     hb_qsv_available();
+    hb_register_hwaccel(&hb_hwaccel_qsv);
 #endif
+
+    hb_hwaccel_common_hwaccel_init();
 }
 
 void hb_common_global_init(int disable_hardware)
@@ -1468,6 +1479,87 @@ const hb_rate_t* hb_audio_bitrate_get_next(const hb_rate_t *last)
     return ((hb_rate_internal_t*)last)->next;
 }
 
+const char * hb_audio_name_get_default(uint64_t layout, int mixdown)
+{
+    int mix_channels = 2;
+
+    if (mixdown != HB_AMIXDOWN_NONE)
+    {
+        mix_channels = hb_mixdown_get_discrete_channel_count(mixdown);
+    }
+    else
+    {
+        mix_channels = hb_layout_get_discrete_channel_count(layout);
+    }
+
+    switch (mix_channels)
+    {
+        case 1:
+            return "Mono";
+            break;
+
+        case 2:
+            return "Stereo";
+            break;
+
+        default:
+            return "Surround";
+            break;
+    }
+}
+
+int hb_audio_autonaming_behavior_get_from_name(const char *name)
+{
+    hb_audio_autonaming_behavior_t behavior = HB_AUDIO_AUTONAMING_NONE;
+
+    if (name)
+    {
+        if (!strcasecmp(name, "all"))
+        {
+            behavior = HB_AUDIO_AUTONAMING_ALL;
+        }
+        else if (!strcasecmp(name, "unnamed"))
+        {
+            behavior = HB_AUDIO_AUTONAMING_UNNAMED;
+        }
+    }
+
+    return behavior;
+}
+
+const char * hb_audio_name_generate(const char *name,
+                                    uint64_t layout, int mixdown, int keep_name,
+                                    hb_audio_autonaming_behavior_t behavior)
+{
+    const char *out = NULL;
+
+    if (name == NULL || name[0] == 0)
+    {
+        name = NULL;
+    }
+
+    if (keep_name)
+    {
+        out = name;
+    }
+
+    if (name != NULL &&
+        (!strcmp(name, "Mono") ||
+         !strcmp(name, "Stereo") ||
+         !strcmp(name, "Surround")))
+    {
+        out = NULL;
+    }
+
+    if (behavior == HB_AUDIO_AUTONAMING_ALL ||
+        (behavior == HB_AUDIO_AUTONAMING_UNNAMED && (name == NULL || name[0] == 0)))
+    {
+        out = hb_audio_name_get_default(layout, mixdown);
+    }
+
+    return out;
+}
+
 // Get limits and hints for the UIs.
 //
 // granularity sets the minimum step increments that should be used
@@ -1501,18 +1593,28 @@ void hb_video_quality_get_limits(uint32_t codec, float *low, float *high,
         case HB_VCODEC_FFMPEG_VCE_H264:
         case HB_VCODEC_FFMPEG_VCE_H265:
         case HB_VCODEC_FFMPEG_VCE_H265_10BIT:
-        case HB_VCODEC_FFMPEG_NVENC_H264:
-        case HB_VCODEC_FFMPEG_NVENC_H265:
-        case HB_VCODEC_FFMPEG_NVENC_AV1:
             *direction   = 1;
             *granularity = 0.1;
             *low         = 0.;
             *high        = 51.;
             break;
+        case HB_VCODEC_FFMPEG_NVENC_H264:
+        case HB_VCODEC_FFMPEG_NVENC_H265:
+        case HB_VCODEC_FFMPEG_NVENC_H265_10BIT:
+            *direction   = 1;
+            *granularity = 0.1;
+            *low         = 1.;
+            *high        = 51.;
+            break;
+        case HB_VCODEC_FFMPEG_NVENC_AV1:
+        case HB_VCODEC_FFMPEG_NVENC_AV1_10BIT:
+            *direction   = 1;
+            *granularity = 0.1;
+            *low         = 1.;
+            *high        = 63.;
+            break;
         case HB_VCODEC_X264_10BIT:
         case HB_VCODEC_X265_10BIT:
-        case HB_VCODEC_FFMPEG_NVENC_H265_10BIT:
-        case HB_VCODEC_FFMPEG_NVENC_AV1_10BIT:
             *direction   = 1;
             *granularity = 0.1;
             *low         = -12.;
@@ -1806,6 +1908,11 @@ int hb_video_encoder_get_depth(int encoder)
     }
 }
 
+static const char * const hb_empty_list_names[] =
+{
+    "auto", NULL
+};
+
 const char* const* hb_video_encoder_get_presets(int encoder)
 {
     if (encoder & HB_VCODEC_FFMPEG_MASK)
@@ -1838,7 +1945,7 @@ const char* const* hb_video_encoder_get_presets(int encoder)
             return hb_av1_svt_preset_names;
 
         default:
-            return NULL;
+            return hb_empty_list_names;
     }
 }
 
@@ -1932,7 +2039,7 @@ const char* const* hb_video_encoder_get_profiles(int encoder)
             return hb_av1_svt_profile_names;
 
         default:
-            return NULL;
+            return hb_empty_list_names;
     }
 }
 
@@ -1979,7 +2086,7 @@ const char* const* hb_video_encoder_get_levels(int encoder)
             return hb_av1_level_names;
 
         default:
-            return NULL;
+            return hb_empty_list_names;
     }
 }
 
@@ -4485,14 +4592,10 @@ static void job_setup(hb_job_t * job, hb_title_t * title)
     job->list_attachment = hb_attachment_list_copy( title->list_attachment );
     job->metadata = hb_metadata_copy( title->metadata );
 
+    job->hw_device_index = -1;
+
 #if HB_PROJECT_FEATURE_QSV
-    job->qsv.ctx = NULL;
-    if (!job->indepth_scan)
-    {
-        job->qsv.ctx = hb_qsv_context_init();
-    }
-    job->qsv.decode                = !!(title->video_decode_support &
-                                        HB_DECODE_SUPPORT_QSV);
+    job->qsv_ctx = hb_qsv_context_init();
 #endif
 }
 
@@ -4589,6 +4692,11 @@ static void job_clean( hb_job_t * job )
 
         // clean up metadata
         hb_metadata_close( &job->metadata );
+
+#if HB_PROJECT_FEATURE_QSV
+        // cleanup qsv specific data
+        hb_qsv_context_close(&job->qsv_ctx);
+#endif
     }
 }
 
@@ -6873,7 +6981,7 @@ static int pix_fmt_is_supported(hb_job_t *job, int pix_fmt)
 
     if (planes_count == 2)
     {
-        if (hb_hwaccel_decode_is_enabled(job) == 0)
+        if (job->hw_accel == NULL)
         {
             return 0;
         }
@@ -6936,58 +7044,4 @@ int hb_get_best_pix_fmt(hb_job_t * job)
     }
 
     return AV_PIX_FMT_YUV420P;
-}
-
-static int pix_hw_fmt_is_supported(hb_job_t *job, int pix_fmt)
-{
-    if (pix_fmt == AV_PIX_FMT_QSV)
-    {
-#if HB_PROJECT_FEATURE_QSV
-        if (hb_qsv_full_path_is_enabled(job) && hb_qsv_get_memory_type(job) == MFX_IOPATTERN_OUT_VIDEO_MEMORY)
-        {
-            return 1;
-        }
-#endif
-    }
-    else if (hb_hwaccel_is_full_hardware_pipeline_enabled(job))
-    {
-        if (pix_fmt == AV_PIX_FMT_CUDA &&
-            job->hw_decode & HB_DECODE_SUPPORT_NVDEC)
-        {
-            return 1;
-        }
-        if (pix_fmt == AV_PIX_FMT_VIDEOTOOLBOX &&
-            job->hw_decode & HB_DECODE_SUPPORT_VIDEOTOOLBOX)
-        {
-            return 1;
-        }
-        if (pix_fmt == AV_PIX_FMT_D3D11 &&
-            job->hw_decode & HB_DECODE_SUPPORT_MF)
-        {
-            return 1;
-        }
-    }
-
-    return 0;
-}
-
-static const enum AVPixelFormat hw_pipeline_pix_fmts[] =
-{
-    AV_PIX_FMT_QSV, AV_PIX_FMT_CUDA, AV_PIX_FMT_VIDEOTOOLBOX, AV_PIX_FMT_D3D11, AV_PIX_FMT_NONE
-};
-
-int hb_get_best_hw_pix_fmt(hb_job_t *job)
-{
-    const int *pix_fmts = hw_pipeline_pix_fmts;
-
-    while (*pix_fmts != AV_PIX_FMT_NONE)
-    {
-        if (pix_hw_fmt_is_supported(job, *pix_fmts))
-        {
-            return *pix_fmts;
-        }
-        pix_fmts++;
-    }
-
-    return AV_PIX_FMT_NONE;
 }

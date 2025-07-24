@@ -10,26 +10,40 @@
 #ifndef HANDBRAKE_QSV_COMMON_H
 #define HANDBRAKE_QSV_COMMON_H
 
-int            hb_qsv_available();
+int hb_qsv_available(void);
 
 #include "handbrake/project.h"
 
 #if HB_PROJECT_FEATURE_QSV
 
 // Public API
-int  hb_qsv_impl_set_preferred(const char *name);
+int hb_qsv_impl_set_preferred(const char *name);
 
 #ifdef __LIBHB__
 // Private API
 
-#include "vpl/mfxvideo.h"
 #include "handbrake/hb_dict.h"
-#include "handbrake/qsv_libav.h"
 #include "libavutil/hwcontext_qsv.h"
+#include "libavcodec/avcodec.h"
+
+typedef struct hb_qsv_context_s
+{
+    int la_is_enabled;
+    int memory_type;
+    const char *vpp_scale_mode;
+    const char *vpp_interpolation_method;
+} hb_qsv_context_t;
+
+// version of MSDK/QSV API currently used
+#define HB_QSV_MSDK_VERSION_MAJOR  1
+#define HB_QSV_MSDK_VERSION_MINOR  3
 
 /* Minimum Intel Media SDK version (currently 1.3, for Sandy Bridge support) */
 #define HB_QSV_MINVERSION_MAJOR HB_QSV_MSDK_VERSION_MAJOR
 #define HB_QSV_MINVERSION_MINOR HB_QSV_MSDK_VERSION_MINOR
+
+#define HB_QSV_FFMPEG_INITIAL_POOL_SIZE (0)
+#define HB_QSV_FFMPEG_EXTRA_HW_FRAMES (60)
 
 static const char * const hb_qsv_h264_level_names[] =
 {
@@ -202,7 +216,6 @@ int            hb_qsv_implementation_is_hardware(mfxIMPL implementation);
 
 /* Intel Quick Sync Video DECODE utilities */
 const char* hb_qsv_decode_get_codec_name(enum AVCodecID codec_id);
-int hb_qsv_decode_is_enabled(hb_job_t *job);
 
 /* Media SDK parameters handling */
 enum
@@ -339,7 +352,6 @@ hb_triplet_t* hb_triplet4key  (hb_triplet_t *triplets, const char *key);
 
 const char* hb_qsv_codec_name    (uint32_t codec_id);
 const char* hb_qsv_profile_name  (uint32_t codec_id, uint16_t profile_id);
-uint8_t     hb_qsv_frametype_xlat(uint16_t qsv_frametype, uint16_t *out_flags);
 
 const char* hb_qsv_impl_get_name(int impl);
 int         hb_qsv_impl_get_num(int impl);
@@ -349,16 +361,11 @@ mfxIMPL     hb_qsv_dx_index_to_impl(int dx_index);
 /* QSV pipeline helpers */
 const char * hb_map_qsv_preset_name(const char * preset);
 int hb_qsv_apply_encoder_options(qsv_data_t * qsv_data, hb_job_t * job, AVDictionary** av_opts);
-int hb_qsv_is_enabled(hb_job_t *job);
-hb_qsv_context* hb_qsv_context_init();
-void hb_qsv_context_uninit(hb_job_t *job);
-int hb_qsv_are_filters_supported(hb_job_t *job);
-int hb_qsv_sanitize_filter_list(hb_job_t *job);
+hb_qsv_context_t * hb_qsv_context_init();
+hb_qsv_context_t * hb_qsv_context_dup(const hb_qsv_context_t *src);
+void hb_qsv_context_close(hb_qsv_context_t **_ctx);
 int hb_qsv_get_memory_type(hb_job_t *job);
 int hb_qsv_full_path_is_enabled(hb_job_t *job);
-int hb_qsv_get_buffer(AVCodecContext *s, AVFrame *frame, int flags);
-enum AVPixelFormat hb_qsv_get_format(AVCodecContext *s, const enum AVPixelFormat *pix_fmts);
-void hb_qsv_uninit_enc(hb_job_t *job);
 int hb_qsv_setup_job(hb_job_t *job);
 int hb_qsv_decode_h264_is_supported(int adapter_index);
 int hb_qsv_decode_h265_is_supported(int adapter_index);
@@ -366,7 +373,6 @@ int hb_qsv_decode_h265_10_bit_is_supported(int adapter_index);
 int hb_qsv_decode_av1_is_supported(int adapter_index);
 int hb_qsv_decode_vvc_is_supported(int adapter_index);
 int hb_qsv_decode_is_codec_supported(int adapter_index, int video_codec_param, int pix_fmt, int width, int height);
-int hb_qsv_device_init(hb_job_t *job, void **hw_device_ctx);
 int hb_qsv_is_ffmpeg_supported_codec(int vcodec);
 
 #endif // __LIBHB__

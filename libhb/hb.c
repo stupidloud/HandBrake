@@ -84,8 +84,13 @@ int hb_avcodec_open(AVCodecContext *avctx, const AVCodec *codec,
     if ((thread_count == HB_FFMPEG_THREADS_AUTO || thread_count > 0) &&
         (codec->type == AVMEDIA_TYPE_VIDEO))
     {
+#if defined (__aarch64__) && defined(_WIN32)
+        avctx->thread_count = (thread_count == HB_FFMPEG_THREADS_AUTO) ?
+                               hb_get_cpu_count() + 1 : thread_count;
+#else
         avctx->thread_count = (thread_count == HB_FFMPEG_THREADS_AUTO) ?
                                hb_get_cpu_count() / 2 + 1 : thread_count;
+#endif
         avctx->thread_type = FF_THREAD_FRAME|FF_THREAD_SLICE;
     }
     else
@@ -441,7 +446,7 @@ void hb_scan( hb_handle_t * h, hb_list_t * paths, int title_index,
     hb_log(" - logical processor count: %d", hb_get_cpu_count());
 
 #if HB_PROJECT_FEATURE_QSV
-    if (!is_hardware_disabled())
+    if (!hb_is_hardware_disabled())
     {
         /* Print QSV info here so that it's in all scan and encode logs */
         hb_qsv_info_print();
@@ -1788,6 +1793,10 @@ static void hb_add_internal( hb_handle_t * h, hb_job_t * job, hb_list_t *list_pa
     job_copy->list_attachment = NULL;
     job_copy->metadata        = NULL;
 
+#if HB_PROJECT_FEATURE_QSV
+    job_copy->qsv_ctx = hb_qsv_context_dup(job->qsv_ctx);
+#endif
+
     /* If we're doing Foreign Audio Search, copy all subtitles matching the
      * first audio track language we find in the audio list.
      *
@@ -2398,7 +2407,7 @@ hb_interjob_t * hb_interjob_get( hb_handle_t * h )
     return h->interjob;
 }
 
-int is_hardware_disabled(void)
+int hb_is_hardware_disabled(void)
 {
     return disable_hardware;
 }

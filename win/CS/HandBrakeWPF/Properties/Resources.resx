@@ -1641,6 +1641,9 @@ VLC and MPC-HC are supported. Other players may also work but are not validated.
   <data name="VideoView_Codec" xml:space="preserve">
     <value>Video Encoder:</value>
   </data>
+  <data name="VideoView_ColourRange" xml:space="preserve">
+    <value>Color Range:</value>
+  </data>
   <data name="VideoView_ConstantFramerate" xml:space="preserve">
     <value>Constant Framerate</value>
   </data>
@@ -2976,5 +2979,35 @@ To allow multiple simultaneous encodes, turn on "Process Isolation" in Tools Men
   </data>
   <data name="QueueView_StartQueueNow" xml:space="preserve">
     <value>Start Queue (Immediately)</value>
+  </data>
+  <data name="AudioTrackNaming_None" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="AudioTrackNaming_Unnamed" xml:space="preserve">
+    <value>Unnamed Only</value>
+  </data>
+  <data name="AudioTrackNaming_All" xml:space="preserve">
+    <value>All Tracks</value>
+  </data>
+  <data name="AudioDefaultsView_NamingBehaviour" xml:space="preserve">
+    <value>Track Naming Behaviour:</value>
+  </data>
+  <data name="AudioDefaultsView_AutoNaming" xml:space="preserve">
+    <value>Autonaming:</value>
+  </data>
+  <data name="AudioDefaultsView_PassthruTrackNames" xml:space="preserve">
+    <value>Passthru Track Names</value>
+  </data>
+  <data name="SubtitlesDefaultsView_PassthruTrackName" xml:space="preserve">
+    <value>Passthru Track Names</value>
+  </data>
+  <data name="VideoColourRange_SameAsSource" xml:space="preserve">
+    <value>Same as source</value>
+  </data>
+  <data name="VideoColourRange_Full" xml:space="preserve">
+    <value>Full</value>
+  </data>
+  <data name="VideoColourRange_Limited" xml:space="preserve">
+    <value>Limited</value>
   </data>
 </root>

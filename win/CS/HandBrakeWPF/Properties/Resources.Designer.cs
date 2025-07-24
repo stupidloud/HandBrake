@@ -365,11 +365,29 @@ namespace HandBrakeWPF.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Autonaming:.
+        /// </summary>
+        public static string AudioDefaultsView_AutoNaming {
+            get {
+                return ResourceManager.GetString("AudioDefaultsView_AutoNaming", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Clear.
         /// </summary>
         public static string AudioDefaultsView_Clear {
             get {
                 return ResourceManager.GetString("AudioDefaultsView_Clear", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Track Naming Behaviour:.
+        /// </summary>
+        public static string AudioDefaultsView_NamingBehaviour {
+            get {
+                return ResourceManager.GetString("AudioDefaultsView_NamingBehaviour", resourceCulture);
             }
         }
         
@@ -383,11 +401,47 @@ namespace HandBrakeWPF.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Passthru Track Names.
+        /// </summary>
+        public static string AudioDefaultsView_PassthruTrackNames {
+            get {
+                return ResourceManager.GetString("AudioDefaultsView_PassthruTrackNames", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Source Track Selection.
         /// </summary>
         public static string AudioDefaultView_Behaviours {
             get {
                 return ResourceManager.GetString("AudioDefaultView_Behaviours", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to All Tracks.
+        /// </summary>
+        public static string AudioTrackNaming_All {
+            get {
+                return ResourceManager.GetString("AudioTrackNaming_All", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to None.
+        /// </summary>
+        public static string AudioTrackNaming_None {
+            get {
+                return ResourceManager.GetString("AudioTrackNaming_None", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unnamed Only.
+        /// </summary>
+        public static string AudioTrackNaming_Unnamed {
+            get {
+                return ResourceManager.GetString("AudioTrackNaming_Unnamed", resourceCulture);
             }
         }
         
@@ -7558,6 +7612,15 @@ namespace HandBrakeWPF.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Passthru Track Names.
+        /// </summary>
+        public static string SubtitlesDefaultsView_PassthruTrackName {
+            get {
+                return ResourceManager.GetString("SubtitlesDefaultsView_PassthruTrackName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Add Closed Captions when available.
         /// </summary>
         public static string SubtitlesView_AddCC {
@@ -8155,6 +8218,33 @@ namespace HandBrakeWPF.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Full.
+        /// </summary>
+        public static string VideoColourRange_Full {
+            get {
+                return ResourceManager.GetString("VideoColourRange_Full", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Limited.
+        /// </summary>
+        public static string VideoColourRange_Limited {
+            get {
+                return ResourceManager.GetString("VideoColourRange_Limited", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Same as source.
+        /// </summary>
+        public static string VideoColourRange_SameAsSource {
+            get {
+                return ResourceManager.GetString("VideoColourRange_SameAsSource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Avg Bitrate (kbps):.
         /// </summary>
         public static string VideoView_AverageBitrate {
@@ -8169,6 +8259,15 @@ namespace HandBrakeWPF.Properties {
         public static string VideoView_Codec {
             get {
                 return ResourceManager.GetString("VideoView_Codec", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Color Range:.
+        /// </summary>
+        public static string VideoView_ColourRange {
+            get {
+                return ResourceManager.GetString("VideoView_ColourRange", resourceCulture);
             }
         }
         

@@ -89,6 +89,11 @@ static const char * const empty_tune_names[] =
     "none", NULL
 };
 
+static const char * const empty_names[] =
+{
+    "auto", NULL
+};
+
 static const char * const vpx_preset_names[] =
 {
     "veryfast", "faster", "fast", "medium", "slow", "slower", "veryslow", NULL
@@ -148,14 +153,12 @@ static const char * const h265_mf_profile_name[] =
 {
     "auto", "main",  NULL
 };
+
 static const char * const av1_mf_profile_name[] =
 {
     "auto", "main",  NULL
 };
-static const char * const ffv1_profile_names[] =
-{
-    "auto", NULL
-};
+
 
 static const char * const hb_ffv1_level_names[] =
 {
@@ -489,7 +492,7 @@ int encavcodecInit( hb_work_object_t * w, hb_job_t * job )
             if (job->vbitrate == pv->qsv_data.param.rc.vbv_max_bitrate)
             {
                 char maxrate[7];
-                snprintf(maxrate, 7, "%d", context->bit_rate);
+                snprintf(maxrate, 7, "%d", (int)context->bit_rate);
                 av_dict_set( &av_opts, "maxrate", maxrate, 0 );
             }
         }
@@ -696,23 +699,19 @@ int encavcodecInit( hb_work_object_t * w, hb_job_t * job )
     context->width     = job->width;
     context->height    = job->height;
 
-    if (hb_hwaccel_is_full_hardware_pipeline_enabled(pv->job))
+    if (job->hw_pix_fmt != AV_PIX_FMT_NONE)
     {
         context->hw_device_ctx = av_buffer_ref(pv->job->hw_device_ctx);
-#if HB_PROJECT_FEATURE_QSV
-        if (!hb_qsv_is_ffmpeg_supported_codec(job->vcodec))
-#endif
-        {
-            hb_hwaccel_hwframes_ctx_init(context, job);
-        }
-        context->pix_fmt = job->hw_pix_fmt;
+        hb_hwaccel_hwframes_ctx_init(context, job->output_pix_fmt, job->hw_pix_fmt);
     }
     else
     {
 #if HB_PROJECT_FEATURE_QSV
         if (hb_qsv_is_ffmpeg_supported_codec(job->vcodec) && !job->hw_device_ctx)
         {
-            hb_qsv_device_init(job, &job->hw_device_ctx);
+            hb_hwaccel_hw_device_ctx_init(AV_HWDEVICE_TYPE_QSV,
+                                          job->hw_device_index,
+                                         &job->hw_device_ctx);
             context->hw_device_ctx = av_buffer_ref(job->hw_device_ctx);
         }
 #endif
@@ -931,17 +930,6 @@ int encavcodecInit( hb_work_object_t * w, hb_job_t * job )
         }
         free(filename);
     }
-
-#if HB_PROJECT_FEATURE_QSV
-    if (hb_hwaccel_is_full_hardware_pipeline_enabled(pv->job) &&
-            hb_qsv_decode_is_enabled(job))
-    {
-        pv->context = context;
-        pv->qsv_data.codec = codec;
-        pv->qsv_data.av_opts = av_opts;
-        return 0;
-    }
-#endif
 
     if (hb_avcodec_open(context, codec, &av_opts, HB_FFMPEG_THREADS_AUTO))
     {
@@ -1308,50 +1296,6 @@ int encavcodecWork( hb_work_object_t * w, hb_buffer_t ** buf_in,
         return HB_WORK_DONE;
     }
 
-#if HB_PROJECT_FEATURE_QSV
-    // postponed encoder initialization, reused code from encavcodecInit()
-    if (hb_hwaccel_is_full_hardware_pipeline_enabled(pv->job) &&
-        hb_qsv_decode_is_enabled(pv->job) && pv->context->hw_frames_ctx == NULL && pv->job->qsv.ctx->hb_ffmpeg_qsv_hw_frames_ctx != NULL)
-    {
-        // use the same hw frames context as for decoder or filter graph hw frames context
-        pv->context->hw_frames_ctx = pv->job->qsv.ctx->hb_ffmpeg_qsv_hw_frames_ctx;
-        int open_ret = 0;
-        if ((open_ret = hb_avcodec_open(pv->context, pv->qsv_data.codec, &pv->qsv_data.av_opts, HB_FFMPEG_THREADS_AUTO)))
-        {
-            hb_log( "encavcodecWork: avcodec_open failed: %s", av_err2str(open_ret) );
-            return HB_WORK_ERROR;
-        }
-
-        /*
-        * Reload colorimetry settings in case custom
-        * values were set in the encoder_options string.
-        */
-        pv->job->color_prim_override     = pv->context->color_primaries;
-        pv->job->color_transfer_override = pv->context->color_trc;
-        pv->job->color_matrix_override   = pv->context->colorspace;
-
-        // avcodec_open populates the opts dictionary with the
-        // things it didn't recognize.
-        AVDictionaryEntry *t = NULL;
-        while( ( t = av_dict_get( pv->qsv_data.av_opts, "", t, AV_DICT_IGNORE_SUFFIX ) ) )
-        {
-            hb_log( "encavcodecWork: Unknown avcodec option %s", t->key );
-        }
-        
-        pv->job->areBframes = 0;
-        if (pv->context->has_b_frames > 0)
-        {
-            pv->job->areBframes = pv->context->has_b_frames;
-        }
-
-        if (pv->context->extradata != NULL)
-        {
-            hb_set_extradata(w->extradata, pv->context->extradata, pv->context->extradata_size);
-        }
-        av_dict_free(&pv->qsv_data.av_opts);
-    }
-#endif
-
     hb_buffer_list_clear(&list);
     if (in->s.flags & HB_BUF_FLAG_EOF)
     {
@@ -1425,14 +1369,17 @@ static int apply_encoder_options(hb_job_t *job, AVCodecContext *context, AVDicti
 
 static int apply_vce_preset(AVDictionary **av_opts, const char *preset)
 {
-    if (preset)
+    if (!strcasecmp(preset, "speed"))
     {
-        if (!strcasecmp(preset, "balanced")
-            || !strcasecmp(preset, "speed")
-            || !strcasecmp(preset, "quality"))
-        {
-            av_opt_set(av_opts, "quality", preset, AV_OPT_SEARCH_CHILDREN);
-        }
+        av_dict_set(av_opts, "quality", "10", 0);
+    }
+    else if (!strcasecmp(preset, "balanced"))
+    {
+        av_dict_set(av_opts, "quality", "5", 0);
+    }
+    else if (!strcasecmp(preset, "quality"))
+    {
+        av_dict_set(av_opts, "quality", "0", 0);
     }
 
     return 0;
@@ -1729,7 +1676,7 @@ const char* const* hb_av_preset_get_names(int encoder)
 #endif
 
         default:
-            return NULL;
+            return empty_names;
     }
 }
 
@@ -1761,15 +1708,13 @@ const char* const* hb_av_profile_get_names(int encoder)
             return h265_mf_profile_name;
         case HB_VCODEC_FFMPEG_MF_AV1:
             return av1_mf_profile_name;
-        case HB_VCODEC_FFMPEG_FFV1:
-            return ffv1_profile_names;
         case HB_VCODEC_FFMPEG_QSV_H264:
             return h264_qsv_profile_name;
         case HB_VCODEC_FFMPEG_QSV_H265:
         case HB_VCODEC_FFMPEG_QSV_H265_10BIT:
             return h265_qsv_profile_name;
          default:
-             return NULL;
+             return empty_names;
      }
 }
 
@@ -1805,7 +1750,7 @@ const char* const* hb_av_level_get_names(int encoder)
             return hb_ffv1_level_names;
 
          default:
-             return NULL;
+             return empty_names;
      }
 }
 

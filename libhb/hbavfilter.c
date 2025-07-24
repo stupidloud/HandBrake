@@ -16,11 +16,6 @@
 #include "handbrake/avfilter_priv.h"
 #include "handbrake/hwaccel.h"
 
-
-#if HB_PROJECT_FEATURE_QSV
-#include "handbrake/qsv_common.h"
-#endif
-
 struct hb_avfilter_graph_s
 {
     AVFilterGraph    * avgraph;
@@ -284,29 +279,10 @@ int hb_avfilter_add_buf(hb_avfilter_graph_t * graph, hb_buffer_t ** buf_in)
 
 hb_buffer_t * hb_avfilter_get_buf(hb_avfilter_graph_t * graph)
 {
-    int           result;
-
-    result = av_buffersink_get_frame(graph->output, graph->frame);
+    int result = av_buffersink_get_frame(graph->output, graph->frame);
     if (result >= 0)
     {
-        hb_buffer_t * buf;
-#if HB_PROJECT_FEATURE_QSV
-        if (hb_hwaccel_is_full_hardware_pipeline_enabled(graph->job) &&
-            hb_qsv_decode_is_enabled(graph->job))
-        {
-            AVBufferRef *hw_frames_ctx = av_buffersink_get_hw_frames_ctx(graph->output);
-            if (!hw_frames_ctx)
-            {
-                hb_error("hb_avfilter_get_buf: failed to get hw_frames_ctx from sink");
-            }
-            else
-            {
-                // copy hw frame ctx from filter graph for future encoder initialization
-                graph->job->qsv.ctx->hb_ffmpeg_qsv_hw_frames_ctx = av_buffer_ref(hw_frames_ctx);
-            }
-        }
- #endif
-        buf = hb_avframe_to_video_buffer(graph->frame, graph->out_time_base);
+        hb_buffer_t *buf = hb_avframe_to_video_buffer(graph->frame, graph->out_time_base);
         av_frame_unref(graph->frame);
         return buf;
     }
