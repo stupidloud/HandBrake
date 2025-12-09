@@ -159,7 +159,6 @@
 
     self.window.contentViewController = _splitViewController;
     self.window.frameAutosaveName = @"HBQueueWindowFrameAutosave";
-    [self.window setFrameFromString:@"HBQueueWindowFrameAutosave"];
 
     // Set up observers
     [NSNotificationCenter.defaultCenter addObserverForName:HBQueueDidChangeStateNotification object:_queue queue:NSOperationQueue.mainQueue usingBlock:^(NSNotification * _Nonnull note) {
@@ -429,6 +428,13 @@ NSString * const HBQueueItemNotificationShowCategory = @"HBQueueItemNotification
     }
 }
 
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center
+       willPresentNotification:(UNNotification *)notification
+         withCompletionHandler:(void (^)(UNNotificationPresentationOptions))completionHandler API_AVAILABLE(macos(10.15))
+{
+    completionHandler(UNNotificationPresentationOptionSound);
+}
+
 - (void)userNotificationCenter:(NSUserNotificationCenter *)center didActivateNotification:(NSUserNotification *)notification
 {
     // Show the file in Finder when a done notification is clicked
@@ -451,7 +457,6 @@ NSString * const HBQueueItemNotificationShowCategory = @"HBQueueItemNotification
         notification.title = title;
         notification.body = description;
         notification.sound = playSound ? UNNotificationSound.defaultSound : nil;
-
         if (fileURL)
         {
             notification.categoryIdentifier = HBQueueItemNotificationShowCategory;

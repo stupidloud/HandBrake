@@ -1211,12 +1211,15 @@ skip_preview:
             title->color_transfer = hb_get_color_transfer(title->color_transfer);
             title->color_matrix   = hb_get_color_matrix(title->color_matrix, vid_info.geometry);
         }
-        else if (title->dovi.dv_profile == 5 ||
-                 (title->dovi.dv_profile == 10 && title->dovi.dv_bl_signal_compatibility_id == 0))
+        else if ((title->dovi.dv_profile == 5 ||
+                 (title->dovi.dv_profile == 10 && title->dovi.dv_bl_signal_compatibility_id == 0)) &&
+                 (title->color_prim == HB_COLR_PRI_UNDEF     ||
+                  title->color_transfer == HB_COLR_TRA_UNDEF ||
+                  title->color_matrix   == HB_COLR_MAT_UNDEF))
         {
-            title->color_prim     = HB_COLR_PRI_UNDEF;
-            title->color_transfer = HB_COLR_TRA_UNDEF;
-            title->color_matrix   = HB_COLR_MAT_UNDEF;
+            title->color_prim     = HB_COLR_PRI_BT2020;
+            title->color_transfer = HB_COLR_TRA_SMPTEST2084;
+            title->color_matrix   = HB_COLR_MAT_IPT_C2;
         }
         else
         {
@@ -1498,6 +1501,8 @@ static void LookForAudio(hb_scan_t *scan, hb_title_t * title, hb_audio_t * audio
         hb_buffer_t * tmp;
         tmp = hb_fifo_get( audio->priv.scan_cache );
         hb_buffer_close( &tmp );
+        av_channel_layout_uninit(info.ch_layout);
+        free(info.ch_layout);
         free( w );
         audio->priv.scan_error_count++;
         return;
@@ -1507,6 +1512,8 @@ static void LookForAudio(hb_scan_t *scan, hb_title_t * title, hb_audio_t * audio
         // didn't find any info
         // Additional buffer data may be required to obtain
         // audio attributes
+        av_channel_layout_uninit(info.ch_layout);
+        free(info.ch_layout);
         free( w );
         return;
     }
@@ -1518,8 +1525,8 @@ static void LookForAudio(hb_scan_t *scan, hb_title_t * title, hb_audio_t * audio
     audio->config.in.samples_per_frame = info.samples_per_frame;
     audio->config.in.bitrate = info.bitrate;
     audio->config.in.matrix_encoding = info.matrix_encoding;
-    audio->config.in.channel_layout = info.channel_layout;
-    audio->config.in.channel_map = info.channel_map;
+    audio->config.in.ch_layout = calloc(1, sizeof(*audio->config.in.ch_layout));
+    av_channel_layout_copy(audio->config.in.ch_layout, info.ch_layout);
     audio->config.in.version = info.version;
     audio->config.in.flags = info.flags;
     audio->config.in.mode = info.mode;
@@ -1724,11 +1731,10 @@ static void LookForAudio(hb_scan_t *scan, hb_title_t * title, hb_audio_t * audio
                 strlen(audio->config.lang.description) - 1);
     }
 
-    if (audio->config.in.channel_layout)
+    if (audio->config.in.ch_layout->nb_channels)
     {
-        int lfes     = (!!(audio->config.in.channel_layout & AV_CH_LOW_FREQUENCY) +
-                        !!(audio->config.in.channel_layout & AV_CH_LOW_FREQUENCY_2));
-        int channels = hb_layout_get_discrete_channel_count(audio->config.in.channel_layout);
+        int lfes     = hb_layout_get_low_freq_channel_count(audio->config.in.ch_layout);
+        int channels = hb_layout_get_discrete_channel_count(audio->config.in.ch_layout);
         char *desc   = audio->config.lang.description +
                         strlen(audio->config.lang.description);
         size_t size = sizeof(audio->config.lang.description) - strlen(audio->config.lang.description);
@@ -1783,6 +1789,8 @@ static void LookForAudio(hb_scan_t *scan, hb_title_t * title, hb_audio_t * audio
             info.name, audio->config.in.samplerate, audio->config.in.bitrate,
             audio->config.lang.description );
 
+    av_channel_layout_uninit(info.ch_layout);
+    free(info.ch_layout);
     free( w );
     return;
 

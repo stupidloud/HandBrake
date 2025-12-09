@@ -1641,6 +1641,9 @@ Sono supportati VLC e MPC-HC. Altri riproduttori multimediali potrebbero funzion
   <data name="VideoView_Codec" xml:space="preserve">
     <value>Codificatore Video:</value>
   </data>
+  <data name="VideoView_ColourRange" xml:space="preserve">
+    <value>Intervallo colori:</value>
+  </data>
   <data name="VideoView_ConstantFramerate" xml:space="preserve">
     <value>Frequenza Fotogrammi Costante</value>
   </data>
@@ -2263,9 +2266,6 @@ Scegliere una preimpostazione differente.</value>
   </data>
   <data name="PictureSettingsResLimitModes_none" xml:space="preserve">
     <value>Nessuna</value>
-  </data>
-  <data name="PresetManger_Title" xml:space="preserve">
-    <value>Gestisci Preimpostazioni</value>
   </data>
   <data name="ManagePresetView_DeleteBuiltIn" xml:space="preserve">
     <value>Elimina Preimpostazioni Predefinite</value>
@@ -2977,13 +2977,34 @@ Per permettere più codifiche simultanee, attivare "Isolamento del Processo" nel
   <data name="QueueView_StartQueueNow" xml:space="preserve">
     <value>Avvia Coda (istantaneamente)</value>
   </data>
+  <data name="AudioTrackNaming_None" xml:space="preserve">
+    <value>Nessuna</value>
+  </data>
+  <data name="AudioTrackNaming_Unnamed" xml:space="preserve">
+    <value>Solo senza nome</value>
+  </data>
+  <data name="AudioTrackNaming_All" xml:space="preserve">
+    <value>Tutte le tracce</value>
+  </data>
+  <data name="AudioDefaultsView_NamingBehaviour" xml:space="preserve">
+    <value>Comportamento di denominazione tracce:</value>
+  </data>
+  <data name="AudioDefaultsView_AutoNaming" xml:space="preserve">
+    <value>Denominazione automatica:</value>
+  </data>
+  <data name="AudioDefaultsView_PassthruTrackNames" xml:space="preserve">
+    <value>Mantieni i nomi delle tracce</value>
+  </data>
+  <data name="SubtitlesDefaultsView_PassthruTrackName" xml:space="preserve">
+    <value>Mantieni i nomi delle tracce</value>
+  </data>
   <data name="VideoColourRange_SameAsSource" xml:space="preserve">
-    <value />
+    <value>Uguale alla sorgente</value>
   </data>
   <data name="VideoColourRange_Full" xml:space="preserve">
-    <value />
+    <value>Completo</value>
   </data>
   <data name="VideoColourRange_Limited" xml:space="preserve">
-    <value />
+    <value>Limitato</value>
   </data>
 </root>
