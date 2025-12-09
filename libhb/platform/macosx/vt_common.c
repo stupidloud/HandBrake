@@ -263,7 +263,7 @@ int hb_vt_get_best_pix_fmt(int encoder, const char *profile)
         case HB_VCODEC_VT_H265:
             return AV_PIX_FMT_NV12;
         case HB_VCODEC_VT_H265_10BIT:
-            if (!strcasecmp(profile, "main422-10"))
+            if (profile != NULL && !strcasecmp(profile, "main422-10"))
             {
                 return AV_PIX_FMT_P210;
             }
@@ -336,7 +336,7 @@ hb_buffer_t * hb_vt_buffer_dup(const hb_buffer_t *src)
     return out;
 }
 
-hb_buffer_t * copy_video_buffer_to_hw_video_buffer(const hb_job_t *job, hb_buffer_t **in)
+hb_buffer_t * copy_video_buffer_to_hw_video_buffer(void *hw_frames_ctx, hb_buffer_t **in)
 {
     hb_buffer_t *buf = *in;
 
@@ -539,5 +539,5 @@ hb_hwaccel_t hb_hwaccel_videotoolbox =
     .hw_pix_fmt = AV_PIX_FMT_VIDEOTOOLBOX,
     .can_filter = are_filters_supported,
     .upload     = copy_video_buffer_to_hw_video_buffer,
-    .caps       = HB_HWACCEL_CAP_SCAN | HB_HWACCEL_CAP_ROTATE
+    .caps       = HB_HWACCEL_CAP_SCAN | HB_HWACCEL_CAP_ROTATE | HB_HWACCEL_CAP_COLOR_RANGE
 };

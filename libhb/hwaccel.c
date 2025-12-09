@@ -11,48 +11,37 @@
 #include "handbrake/handbrake.h"
 #include "handbrake/qsv_common.h"
 
-static int hwframe_init(const hb_job_t *job, AVFrame **frame)
+static hb_buffer_t * upload(void *hw_frames_ctx, hb_buffer_t **buf_in)
 {
-    AVBufferRef *hw_frames_ctx = NULL;
-    AVBufferRef *hw_device_ctx = job->hw_device_ctx;
-
-    if (!hw_device_ctx || !frame)
-    {
-        hb_error("hwaccel: failed to initialize hw frame");
-        return 1;
-    }
-
-    *frame = av_frame_alloc();
-    hw_frames_ctx = hb_hwaccel_init_hw_frames_ctx(hw_device_ctx,
-                                                  job->input_pix_fmt, job->hw_pix_fmt,
-                                                  job->width, job->height, 0);
-    return av_hwframe_get_buffer(hw_frames_ctx, *frame, 0);
-}
-
-static hb_buffer_t * upload(const hb_job_t *job, hb_buffer_t **buf_in)
-{
+    int ret = 0;
     AVFrame frame = {{0}};
-    AVFrame *hw_frame = NULL;
+    AVFrame *hw_frame = av_frame_alloc();
 
-    int ret;
+    if (hw_frame == NULL)
+    {
+        goto fail;
+    }
 
     hb_video_buffer_to_avframe(&frame, buf_in);
 
-    ret = hwframe_init(job, &hw_frame);
+    ret = av_hwframe_get_buffer(hw_frames_ctx, hw_frame, 0);
     if (ret < 0)
     {
+        hb_log("hwaccel: failed to get hwframe buffer");
         goto fail;
     }
 
     av_frame_copy_props(hw_frame, &frame);
     if (ret < 0)
     {
+        hb_log("hwaccel: failed to copy props");
         goto fail;
     }
 
     av_hwframe_transfer_data(hw_frame, &frame, 0);
     if (ret < 0)
     {
+        hb_log("hwaccel: failed to transfer data");
         goto fail;
     }
 
@@ -168,11 +157,17 @@ static int is_rotation_supported(hb_hwaccel_t *hwaccel, int rotation)
     return rotation != HB_ROTATION_0 && (hwaccel->caps & HB_HWACCEL_CAP_ROTATE) == 0 ? 0 : 1;
 }
 
-int hb_hwaccel_can_use_full_hw_pipeline(hb_hwaccel_t *hwaccel, hb_list_t *list_filter, int encoder, int rotation)
+static int is_color_range_supported(hb_hwaccel_t *hwaccel, int color_range)
+{
+    return color_range != 0 && (hwaccel->caps & HB_HWACCEL_CAP_COLOR_RANGE) == 0 ? 0 : 1;
+}
+
+int hb_hwaccel_can_use_full_hw_pipeline(hb_hwaccel_t *hwaccel, hb_list_t *list_filter, int encoder, int rotation, int color_range)
 {
     return hwaccel != NULL &&
         hwaccel->can_filter(list_filter) &&
         is_rotation_supported(hwaccel, rotation) &&
+        is_color_range_supported(hwaccel, color_range) &&
         is_encoder_supported(hwaccel, encoder);
 }
 
@@ -238,16 +233,11 @@ int hb_hwaccel_hw_device_ctx_init(enum AVHWDeviceType device_type, int device_in
     AVBufferRef *ctx;
     AVDictionary *dict = NULL;
 
-    if (device_index >= 0)
+    if (device_index > -1)
     {
         char device[32];
         snprintf(device, 32, "%u", device_index);
-
-        err = av_dict_set(&dict, "child_device", device, 0);
-        if (err < 0)
-        {
-            return err;
-        }
+        av_dict_set(&dict, "child_device", device, 0);
     }
 
 #if defined(_WIN32) || defined(__MINGW32__)
@@ -257,7 +247,7 @@ int hb_hwaccel_hw_device_ctx_init(enum AVHWDeviceType device_type, int device_in
     }
 #endif
 
-    if ((err = av_hwdevice_ctx_create(&ctx, device_type, NULL, NULL, 0)) < 0)
+    if ((err = av_hwdevice_ctx_create(&ctx, device_type, NULL, dict, 0)) < 0)
     {
         hb_error("hwaccel: failed to create hwdevice");
     }

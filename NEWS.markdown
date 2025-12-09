@@ -10,7 +10,64 @@ Download available from Microsoft:
 - [For x64 (AMD or Intel CPUs)](https://aka.ms/dotnet/8.0/windowsdesktop-runtime-win-x64.exe)
 - [For Arm64 (Qualcomm or other)](https://aka.ms/dotnet/8.0/windowsdesktop-runtime-win-arm64.exe)
 
+## HandBrake 1.10.2
+
+### All platforms
+
+#### Video
+
+- Fixed a crash that could happen when encoding high depth video
+
+#### Third-party libraries
+
+- Updated libraries
+  - HarfBuzz 11.4.5 (subtitles)
+  - SVT-AV1 3.1.2 (AV1 video encoding)
+
+### Mac
+
+- Added a workaround to avoid a rare crash on Apple Silicon Macs
+
+### Windows
+
+- Fixed some incorrect behaviour on CQ/RF calcuations and handling of presets
+- The app will now automatically disable QSV or NVDec decoders if an out-of-date driver is detected.
+
+
+## HandBrake 1.10.1
+
+### All platforms
+
+#### Video
+
+- Fixed a visual corruption issue that could happen when encoding with x265
+- Fixed SVT-AV1 presets 10, 9, and 8 not working properly with SSIM tune
+
+#### Third-party libraries
+
+- Updated libraries
+  - HarfBuzz 11.4.2 (subtitles)
+
+### Linux
+
+- Fixed preview audio when running the flatpak build
+- Fixed Vorbis passthru checkbox not being applied when the title changes
+
+### Mac
+
+- Improved custom border color validation
+
+### Windows
+
+- Added new translation
+  - Romanian (Română)
+- Fixed arm64 build
+- Fixed audio track name generation
+
+
 ## HandBrake 1.10.0
+
+### All platforms
 
 #### General
 
@@ -28,12 +85,14 @@ Download available from Microsoft:
 #### Video
 
 - Added an option to choose the encoder color range
+- Improved Framerate Shaper metrics performance for high resolution frames
 - Fixed VCN encoder presets (#6974)
 - Updated NVEnc CQ range (#6418)
 
 #### Audio
 
 - Addded an option to disable track names passthru and autonaming
+- Fixed selection behaviour fallback when no audio track is found (#6666)
 - EAC3 + Atmos is now properly signaled in MP4
 
 #### Subtitles
@@ -42,50 +101,66 @@ Download available from Microsoft:
 - SubRip/UTF-8 subtitles are now passed through to MKV without conversion to SSA
 - Fixed a crash that could happen when burning bitmap subtitles
 
+#### Filters
+
+- Fixed a crash that could happen when using the Chroma Smooth filter (#7033)
+
 #### Third-party libraries
 
 - Updated libraries
   - AMF 1.4.36 (AMD VCN video encoding)
   - FFmpeg 7.1.1 (decoding and filters)
-  - HarfBuzz 11.2.1 (subtitles)
+  - HarfBuzz 11.3.3 (subtitles)
   - libass 0.17.4 (subtitles)
+  - libdovi 3.3.2 (Dolby Vision dynamic metadata)
   - libiconv 1.18 (character encoding support)
   - libjpeg-turbo 3.1.1 (preview image compression)
   - liblzma (xz) 5.8.1 (LZMA video decoding, e.g. TIFF)
+  - libogg 1.3.6 (Xiph codecs support)
+  - libtheora 1.2.0 (Theora video encoding)
+  - libvpx 1.15.2 (VP8/VP9 video encoding)
   - nv-codec-headers 13.0.19.0 (Nvidia NVENC encoding)
-  - oneVPL 2.14.0 (Intel QSV video encoding/decoding)
-  - SVT-AV1 3.0.2 (AV1 video encoding)
-  - x264 165 r3214 (H.264/AVC video encoding)
-  - x265 r13244 (H.265/HEVC video encoding)
+  - oneVPL 2.15.0 (Intel QSV video encoding/decoding)
+  - SVT-AV1 3.1.0 (AV1 video encoding)
+  - x264 165 r3222 (H.264/AVC video encoding)
+  - x265 r13276 (H.265/HEVC video encoding)
 
 ### Linux
 
 - Fixed Opus and Vorbis passthru validation in Webm
+- Fixed a crash that could happen when removing items from queue
+- Fixed audio bitrates list validation (#6997)
+- Built-in presets for unavailable hardware encoders are now hidden
+- Removed orphaned, no longer maintained locales or locales without active translators (af, cs, da, he, hr, ka, no, pl, pt, ro, ru, si, sk, th, tr, uk_UA, zh_TW). Removed locales are welcome back as soon as the locales are updated.
+- Updated existing and maintained locales.
 
 ### Mac
 
+- Added support for the VideoToolbox AV1 hardware decoder
 - Added a Metal accelerated Render Sub filter
 - Added a contextual menu to the presets popover
 - Updated Auto Naming Preferences to add "{angle}" as a filename generation option (#6086)
 - Reduced CPU usage when using VideoToolbox decoders and encoders
 - Encoded files are now excluded from Time Machine until they are completed
-- Fixed queue jobs not being reloaded properly when the source is an .iso file
+- Fixed queue jobs not being reloaded properly when the source is a .iso file
 - Fixed "Same as source" destination option, it didn't work properly in some case
-- Fixed reloading jobs from the queue when the source is a .iso file
+- Updated existing and maintained locales
 
 ### Windows
 
 - Added a new preference "Default Range Mode for titles". See Preferences -> Advanced (#6385)
 - Added a new preference to run a custom action when the queue completes. See Preferences -> When Done (#4851)
 - Added "{destination_folder}" as option on the "Encode Completed" "Send File To" option.
+- Added support for DirectX based AV1 video decoding when using the Media Foundation encoder on ARM devices
 - Updated Auto Naming Preferences to add "{angle}" as a filename generation option (#6086)
-- Minor Performance Optimisations for ARM64 devices running Windows
-- Minor UI improvements throughout the UI.
-- Various bug fixes and improvements (#6524, #6517, #6514, #6477, #6473, #6086)
-- Handle temporary files path with non ASCII charactes correctly
+- Performance Optimisations for ARM64 devices running Windows
+- Minor miscellaneous UI improvements.
+- Various bug fixes and improvements (#6524, #6517, #6514, #6477, #6473, #6086, #6984, #6892, #6999, #7003)
 - Added new translations
   - Galician (Galego)
   - Hungarian (Magyar)
+- Removed orphaned, no longer maintained locales or locales without active translators (cs-CZ). Removed locales are welcome back as soon as the locales are updated.
+- Updated existing and maintained locales.
 
 
 ## HandBrake 1.9.2

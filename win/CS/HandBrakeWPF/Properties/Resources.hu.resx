@@ -1641,6 +1641,9 @@ A VLC és az MPC-HC támogatott. Más lejátszók is dolgozhatnak, de nem érvé
   <data name="VideoView_Codec" xml:space="preserve">
     <value>Videó kódoló:</value>
   </data>
+  <data name="VideoView_ColourRange" xml:space="preserve">
+    <value>Color Range:</value>
+  </data>
   <data name="VideoView_ConstantFramerate" xml:space="preserve">
     <value>Állandó képkockasebesség</value>
   </data>
@@ -2263,9 +2266,6 @@ Kérjük, válasszon egy másik előbeállítást.</value>
   </data>
   <data name="PictureSettingsResLimitModes_none" xml:space="preserve">
     <value>Nincs</value>
-  </data>
-  <data name="PresetManger_Title" xml:space="preserve">
-    <value>Előbeállítások kezelése</value>
   </data>
   <data name="ManagePresetView_DeleteBuiltIn" xml:space="preserve">
     <value>Beépített előbeállítások törlése</value>
@@ -2977,13 +2977,34 @@ Több egyidejű kódolás engedélyezéséhez kapcsolja be a "Folyamat elkülön
   <data name="QueueView_StartQueueNow" xml:space="preserve">
     <value>Várólista indítása (azonnal)</value>
   </data>
+  <data name="AudioTrackNaming_None" xml:space="preserve">
+    <value>Nincs</value>
+  </data>
+  <data name="AudioTrackNaming_Unnamed" xml:space="preserve">
+    <value>Unnamed Only</value>
+  </data>
+  <data name="AudioTrackNaming_All" xml:space="preserve">
+    <value>All Tracks</value>
+  </data>
+  <data name="AudioDefaultsView_NamingBehaviour" xml:space="preserve">
+    <value>Track Naming Behaviour:</value>
+  </data>
+  <data name="AudioDefaultsView_AutoNaming" xml:space="preserve">
+    <value>Autonaming:</value>
+  </data>
+  <data name="AudioDefaultsView_PassthruTrackNames" xml:space="preserve">
+    <value>Passthru Track Names</value>
+  </data>
+  <data name="SubtitlesDefaultsView_PassthruTrackName" xml:space="preserve">
+    <value>Passthru Track Names</value>
+  </data>
   <data name="VideoColourRange_SameAsSource" xml:space="preserve">
-    <value />
+    <value>Ugyanaz, mint a forrás</value>
   </data>
   <data name="VideoColourRange_Full" xml:space="preserve">
-    <value />
+    <value>Full</value>
   </data>
   <data name="VideoColourRange_Limited" xml:space="preserve">
-    <value />
+    <value>Limited</value>
   </data>
 </root>
