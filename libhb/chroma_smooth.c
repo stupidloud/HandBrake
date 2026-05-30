@@ -1,7 +1,7 @@
 /* chroma_smooth.c
 
    Copyright (c) 2002 Rémi Guyomarch <rguyom at pobox.com>
-   Copyright (c) 2003-2025 HandBrake Team
+   Copyright (c) 2003-2026 HandBrake Team
    This file is part of the HandBrake source code
    Homepage: <http://handbrake.fr/>.
    It may be used under the terms of the GNU General Public License v2.
@@ -73,6 +73,7 @@ hb_filter_object_t hb_filter_chroma_smooth =
     .id                = HB_FILTER_CHROMA_SMOOTH,
     .enforce_order     = 1,
     .name              = "Chroma Smooth",
+    .short_name        = "chromasmooth",
     .settings          = NULL,
     .init              = chroma_smooth_init,
     .init_thread       = chroma_smooth_init_thread,

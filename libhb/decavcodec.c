@@ -1,6 +1,6 @@
 /* decavcodec.c
 
-   Copyright (c) 2003-2025 HandBrake Team
+   Copyright (c) 2003-2026 HandBrake Team
    Copyright 2022 NVIDIA Corporation
    This file is part of the HandBrake source code
    Homepage: <http://handbrake.fr/>.
@@ -1303,7 +1303,7 @@ static hb_buffer_t *copy_frame( hb_work_private_t *pv )
         }
 
         // Check for Dolby Vision and store the first RPU found
-        // eventually to attach to the the initial black buffer
+        // eventually to attach to the initial black buffer
         if (pv->title->initial_rpu == NULL)
         {
             int type = AV_FRAME_DATA_DOVI_RPU_BUFFER;

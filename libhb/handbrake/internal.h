@@ -1,6 +1,6 @@
 /* internal.h
 
-   Copyright (c) 2003-2025 HandBrake Team
+   Copyright (c) 2003-2026 HandBrake Team
    This file is part of the HandBrake source code
    Homepage: <http://handbrake.fr/>.
    It may be used under the terms of the GNU General Public License v2.
@@ -448,6 +448,8 @@ extern hb_filter_object_t hb_filter_deblock;
 extern hb_filter_object_t hb_filter_denoise;
 extern hb_filter_object_t hb_filter_nlmeans;
 extern hb_filter_object_t hb_filter_chroma_smooth;
+extern hb_filter_object_t hb_filter_bm3d;
+extern hb_filter_object_t hb_filter_deband;
 extern hb_filter_object_t hb_filter_render_sub;
 extern hb_filter_object_t hb_filter_rpu;
 extern hb_filter_object_t hb_filter_crop_scale;
@@ -462,7 +464,7 @@ extern hb_filter_object_t hb_filter_colorspace;
 extern hb_filter_object_t hb_filter_format;
 
 #if defined(__APPLE__)
-extern hb_filter_object_t hb_filter_prefilter_vt;
+extern hb_filter_object_t hb_filter_adapter_vt;
 extern hb_filter_object_t hb_filter_comb_detect_vt;
 extern hb_filter_object_t hb_filter_yadif_vt;
 extern hb_filter_object_t hb_filter_bwdif_vt;
@@ -474,6 +476,10 @@ extern hb_filter_object_t hb_filter_pad_vt;
 extern hb_filter_object_t hb_filter_lapsharp_vt;
 extern hb_filter_object_t hb_filter_unsharp_vt;
 #endif
+
+extern hb_filter_object_t hb_filter_acompressor;
+extern hb_filter_object_t hb_filter_agate;
+extern hb_filter_object_t hb_filter_avfilter_audio;
 
 extern hb_motion_metric_object_t hb_motion_metric;
 extern hb_blend_object_t hb_blend;

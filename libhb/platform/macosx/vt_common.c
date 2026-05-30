@@ -1,6 +1,6 @@
 /* vt_common.c
 
-   Copyright (c) 2003-2025 HandBrake Team
+   Copyright (c) 2003-2026 HandBrake Team
    This file is part of the HandBrake source code
    Homepage: <http://handbrake.fr/>.
    It may be used under the terms of the GNU General Public License v2.
@@ -105,6 +105,8 @@ int hb_vt_is_encoder_available(int encoder)
             });
             return vt_h265_10bit_available;
         }
+        case HB_VCODEC_VT_PRORES:
+            return 1;
     }
     return 0;
 }
@@ -232,6 +234,12 @@ static const char * const vt_h265_level_names[] =
     "auto",  NULL,
 };
 
+static const char * const vt_prores_profile_name[] =
+{
+    "auto", "proxy", "lt", "standard", "hq", "4444", "4444xq", NULL
+};
+
+
 static const enum AVPixelFormat vt_h26x_pix_fmts[] =
 {
     AV_PIX_FMT_P410, AV_PIX_FMT_NV24, AV_PIX_FMT_P210, AV_PIX_FMT_NV16, AV_PIX_FMT_P010, AV_PIX_FMT_YUV420P, AV_PIX_FMT_NV12, AV_PIX_FMT_NONE
@@ -299,6 +307,8 @@ const char* const* hb_vt_profile_get_names(int encoder)
                 return vt_h265_10_profile_name;
             }
         }
+        case HB_VCODEC_VT_PRORES:
+            return vt_prores_profile_name;
     }
     return NULL;
 }
@@ -422,16 +432,23 @@ static int are_filters_supported(hb_list_t *filters)
 
         switch (filter->id)
         {
-            case HB_FILTER_DETELECINE:
-            case HB_FILTER_DECOMB:
-            case HB_FILTER_DEBLOCK:
-            case HB_FILTER_DENOISE:
-            case HB_FILTER_NLMEANS:
-            case HB_FILTER_COLORSPACE:
+            case HB_FILTER_VFR:
+            case HB_FILTER_COMB_DETECT:
+            case HB_FILTER_YADIF:
+            case HB_FILTER_BWDIF:
+            case HB_FILTER_CROP_SCALE:
+            case HB_FILTER_CHROMA_SMOOTH:
+            case HB_FILTER_ROTATE:
+            case HB_FILTER_PAD:
+            case HB_FILTER_GRAYSCALE:
+            case HB_FILTER_LAPSHARP:
+            case HB_FILTER_UNSHARP:
+            case HB_FILTER_RENDER_SUB:
             case HB_FILTER_FORMAT:
-                supported = 0;
+            case HB_FILTER_RPU:
                 break;
             default:
+                supported = 0;
                 break;
         }
 
@@ -478,7 +495,7 @@ static void replace_filter(hb_job_t *job, int prev_filter_id, int new_filter_id)
         {
             hb_list_rem(list, filter);
             hb_filter_object_t *new_filter = hb_filter_init(new_filter_id);
-            hb_add_filter_dict(job, new_filter, settings);
+            hb_add_filter_dict(job->list_filter, new_filter, settings);
             hb_filter_close(&filter);
         }
     }
@@ -491,9 +508,9 @@ void hb_vt_setup_hw_filters(hb_job_t *job)
         fix_prores_pix_fmt(job);
 
         // Add adapter
-        hb_filter_object_t *filter = hb_filter_init(HB_FILTER_PRE_VT);
+        hb_filter_object_t *filter = hb_filter_init(HB_FILTER_ADAPTER_VT);
         char *settings = hb_strdup_printf("rotation=%d", job->title->rotation);
-        hb_add_filter(job, filter, settings);
+        hb_add_filter(job->list_filter, filter, settings);
         free(settings);
 
         replace_filter(job, HB_FILTER_COMB_DETECT, HB_FILTER_COMB_DETECT_VT);
@@ -527,6 +544,7 @@ static const int vt_encoders[] =
     HB_VCODEC_VT_H264,
     HB_VCODEC_VT_H265,
     HB_VCODEC_VT_H265_10BIT,
+    HB_VCODEC_VT_PRORES,
     HB_VCODEC_INVALID
 };
 

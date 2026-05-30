@@ -1,6 +1,6 @@
 /* nvenc_common.h
  *
- * Copyright (c) 2003-2025 HandBrake Team
+ * Copyright (c) 2003-2026 HandBrake Team
  * This file is part of the HandBrake source code.
  * Homepage: <http://handbrake.fr/>.
  * It may be used under the terms of the GNU General Public License v2.
@@ -13,6 +13,7 @@
 #include "handbrake/hbffmpeg.h"
 
 int            hb_nvenc_h264_available();
+int            hb_nvenc_h264_10bit_available();
 int            hb_nvenc_h265_available();
 int            hb_nvenc_av1_available();
 int            hb_check_nvenc_available();

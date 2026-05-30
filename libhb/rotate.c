@@ -1,6 +1,6 @@
 /* rotate.c
 
-   Copyright (c) 2003-2025 HandBrake Team
+   Copyright (c) 2003-2026 HandBrake Team
    This file is part of the HandBrake source code
    Homepage: <http://handbrake.fr/>.
    It may be used under the terms of the GNU General Public License v2.
@@ -21,6 +21,7 @@ hb_filter_object_t hb_filter_rotate =
     .enforce_order     = 1,
     .skip              = 1,
     .name              = "Rotate",
+    .short_name        = "rotate",
     .settings          = NULL,
     .init              = rotate_init,
     .work              = hb_avfilter_null_work,

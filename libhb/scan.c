@@ -1,6 +1,6 @@
 /* scan.c
 
-   Copyright (c) 2003-2025 HandBrake Team
+   Copyright (c) 2003-2026 HandBrake Team
    This file is part of the HandBrake source code
    Homepage: <http://handbrake.fr/>.
    It may be used under the terms of the GNU General Public License v2.
@@ -1396,6 +1396,18 @@ skip_preview:
             hb_log("scan: hdr10+ dynamic metadata found");
         }
 
+        if (title->spherical_mapping.projection > HB_SPHERICAL_UNSET)
+        {
+            hb_log("scan: spherical mapping: %s",
+                   av_spherical_projection_name(title->spherical_mapping.projection));
+        }
+
+        if (title->stereo_3d.type > HB_STEREO3D_UNSET)
+        {
+            hb_log("scan: stereo 3d: %s",
+                   av_stereo3d_type_name(title->stereo_3d.type));
+        }
+
         if (title->video_decode_support != HB_DECODE_SW)
         {
             hb_log("scan: supported video decoders:%s%s%s",
@@ -1622,6 +1634,24 @@ static void LookForAudio(hb_scan_t *scan, hb_title_t * title, hb_audio_t * audio
                 case AV_CODEC_ID_VORBIS:
                     codec_name = "Vorbis";
                     break;
+                case AV_CODEC_ID_PCM_S16BE:
+                case AV_CODEC_ID_PCM_S16LE:
+                case AV_CODEC_ID_PCM_S24BE:
+                case AV_CODEC_ID_PCM_S24LE:
+                case AV_CODEC_ID_PCM_S32BE:
+                case AV_CODEC_ID_PCM_S32LE:
+                case AV_CODEC_ID_PCM_U16BE:
+                case AV_CODEC_ID_PCM_U16LE:
+                case AV_CODEC_ID_PCM_U24BE:
+                case AV_CODEC_ID_PCM_U24LE:
+                case AV_CODEC_ID_PCM_U32BE:
+                case AV_CODEC_ID_PCM_U32LE:
+                case AV_CODEC_ID_PCM_F32BE:
+                case AV_CODEC_ID_PCM_F32LE:
+                case AV_CODEC_ID_PCM_F64BE:
+                case AV_CODEC_ID_PCM_F64LE:
+                    codec_name = "PCM";
+                    break;
                 default:
                     codec_name = codec->name;
                     break;
@@ -1666,8 +1696,11 @@ static void LookForAudio(hb_scan_t *scan, hb_title_t * title, hb_audio_t * audio
                 case HB_ACODEC_MP3:
                     codec_name = "MP3";
                     break;
-                case AV_CODEC_ID_VORBIS:
+                case HB_ACODEC_VORBIS:
                     codec_name = "Vorbis";
+                    break;
+                case HB_ACODEC_PCM:
+                    codec_name = "PCM";
                     break;
                 default:
                     codec_name = "Unknown (libav)";

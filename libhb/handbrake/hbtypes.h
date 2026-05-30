@@ -1,6 +1,6 @@
 /* hbtypes.h
 
-   Copyright (c) 2003-2025 HandBrake Team
+   Copyright (c) 2003-2026 HandBrake Team
    This file is part of the HandBrake source code
    Homepage: <http://handbrake.fr/>.
    It may be used under the terms of the GNU General Public License v2.
@@ -53,5 +53,7 @@ typedef struct hb_mastering_display_metadata_s hb_mastering_display_metadata_t;
 typedef struct hb_content_light_metadata_s hb_content_light_metadata_t;
 typedef struct hb_ambient_viewing_environment_metadata_s hb_ambient_viewing_environment_metadata_t;
 typedef struct hb_dovi_conf_s hb_dovi_conf_t;
+typedef struct hb_spherical_mapping_s hb_spherical_mapping_t;
+typedef struct hb_stereo_3d_s hb_stereo_3d_t;
 
 #endif // HANDBRAKE_TYPES_H

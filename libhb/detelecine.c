@@ -1,6 +1,6 @@
 /* detelecine.c
 
-   Copyright (c) 2003-2025 HandBrake Team
+   Copyright (c) 2003-2026 HandBrake Team
    This file is part of the HandBrake source code
    Homepage: <http://handbrake.fr/>.
    It may be used under the terms of the GNU General Public License v2.
@@ -121,6 +121,7 @@ hb_filter_object_t hb_filter_detelecine =
     .id                = HB_FILTER_DETELECINE,
     .enforce_order     = 1,
     .name              = "Detelecine (pullup)",
+    .short_name        = "detelecine",
     .settings          = NULL,
     .init              = hb_detelecine_init,
     .work              = hb_detelecine_work,
